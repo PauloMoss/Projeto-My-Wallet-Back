@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 
 import connection from './database.js';
-import { loginSchema } from './schemas.js';
+import { loginSchema, signUpSchema } from './schemas.js';
 
 const app = express();
 
@@ -13,10 +13,13 @@ app.use(cors());
 
 app.post("/sign-up", async (req,res) => {
     try{
-        console.log(req.body)
-        const { name, email, password, confirmPassword } = req.body;
+        const { name, email, password } = req.body;
 
-        //validate password === confirmPassword
+        const err = signUpSchema.validate(req.body).error;
+        if(err) {
+            console.log(err)
+            return res.sendStatus(400);
+        }
 
         const cryptPassword = bcrypt.hashSync(password, 10);
 
@@ -59,7 +62,7 @@ app.post("/login", async (req,res) => {
 
             delete user.password;
 
-            res.send({id, email, token});
+            res.send({id: user.id, name: user.name, email, token});
 
         } else {
             res.sendStatus(401);
@@ -144,6 +147,22 @@ app.post("/records/:transferType", async (req,res) => {
     }
 })
 
-app.listen(4000, () => {
-    console.log("Server running on port 4000!")
+app.post("/logout", async (req,res) => {
+    try{
+        const authorization = req.headers['authorization'];
+        const token = authorization?.replace('Bearer ', '');
+
+        if(!token) return res.sendStatus(401);
+
+        await connection.query(`
+            DELETE FROM sessions 
+            WHERE token = $1
+        `, [token]);
+        res.sendStatus(200);
+    } catch(e) {
+        console.log(e);
+        res.sendStatus(500)
+    }
 })
+
+export default app;
