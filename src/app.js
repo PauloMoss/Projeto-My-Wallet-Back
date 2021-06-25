@@ -2,9 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import { stripHtml } from "string-strip-html";
 
 import connection from './database.js';
-import { loginSchema, signUpSchema } from './schemas.js';
+import { loginSchema, signUpSchema, transferSchema } from './schemas.js';
 
 const app = express();
 
@@ -13,13 +14,23 @@ app.use(cors());
 
 app.post("/sign-up", async (req,res) => {
     try{
-        const { name, email, password } = req.body;
+        const alreadyUsing = await connection.query(`
+            SELECT * FROM users 
+            WHERE email = $1
+        `, [req.body.email]);
+
+        if(alreadyUsing.rows.length) {
+            return res.sendStatus(409)
+        }
+        req.body.name = stripHtml(req.body.name).result.trim();
+        req.body.email = stripHtml(req.body.email).result.trim();
 
         const err = signUpSchema.validate(req.body).error;
         if(err) {
             console.log(err)
             return res.sendStatus(400);
         }
+        const { name, email, password } = req.body;
 
         const cryptPassword = bcrypt.hashSync(password, 10);
 
@@ -37,8 +48,9 @@ app.post("/sign-up", async (req,res) => {
 })
 
 app.post("/login", async (req,res) => {
-    
     try{
+        req.body.email = stripHtml(req.body.email).result.trim();
+
         const { email, password } = req.body
         const err = loginSchema.validate(req.body).error;
         if(err) {
@@ -77,7 +89,6 @@ app.get("/records", async (req,res) => {
     try{
         const authorization = req.headers['authorization'];
         const token = authorization?.replace('Bearer ', '');
-
         if(!token) return res.sendStatus(401);
         
         const success = await connection.query(`
@@ -111,18 +122,28 @@ app.get("/records", async (req,res) => {
 
 app.post("/records/:transferType", async (req,res) => {
     try{
+        req.body.description = stripHtml(req.body.description).result.trim()
+
         const authorization = req.headers['authorization'];
         const token = authorization?.replace('Bearer ', '');
 
         if(!token) return res.sendStatus(401);
+
+        const err = transferSchema.validate(req.body).error;
+        if(err) {
+            console.log(err)
+            return res.sendStatus(400);
+        }
 
         const { transferType } = req.params;
         const { value, description } = req.body;
         let type;
         if(transferType === 'Out') {
             type = 'Withdraw';
-        } else {
+        } else if(transferType === 'In') {
             type = 'Incomming';
+        } else {
+            return res.sendStatus(404);
         }
 
         const success = await connection.query(`
