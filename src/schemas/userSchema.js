@@ -12,13 +12,7 @@ const signUpSchema = joi.object({
     confirmPassword: joi.ref('password')
 })
 
-const transferSchema = joi.object({
-    value: joi.number().integer().required(),
-    description: joi.string().allow('')
-})
-
 export {
     loginSchema,
-    signUpSchema,
-    transferSchema
+    signUpSchema
 }
