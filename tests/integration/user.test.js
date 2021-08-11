@@ -1,6 +1,6 @@
+import '../../src/setup.js';
 import supertest from 'supertest';
 import app from '../../src/app.js';
-import bcrypt from 'bcrypt';
 
 import{ cleanDatabase, endConnection } from '../utils/database.js';
 import{ createFakeUser, insertFakeUserInDatabase } from '../factories/userFactory.js';
@@ -60,7 +60,7 @@ describe("POST /sign-up", () => {
 
 describe("POST /login", () => {
 
-    beforeEach(async () =>{
+    beforeEach(async () => {
         const body = { name: 'MyIntegrationTest', email: 'test@test.com', password: '123456' }
         await insertFakeUserInDatabase(body)
     })

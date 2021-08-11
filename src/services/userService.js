@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 
 import * as userRepositorie from '../repositories/userRepository.js';
 

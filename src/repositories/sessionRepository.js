@@ -1,14 +1,14 @@
 import connection from '../database.js';
 
-export async function saveSession(userId, token) {
+export async function saveSession(user, token) {
 
     await connection.query(`
         INSERT INTO sessions ("userId", token)
         VALUES ($1, $2)
-    `, [userId, token]);
+    `, [user.id, token]);
 }
 
-export async function findSession() {
+export async function findSession(token) {
 
     const success = await connection.query(`
         SELECT * FROM sessions 

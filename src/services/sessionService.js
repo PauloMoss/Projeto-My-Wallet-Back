@@ -6,7 +6,7 @@ import * as sessionRepository from '../repositories/sessionRepository.js';
 export async function createSession(user) {
 
     const token = uuid();
-    await sessionRepository.saveSession(user.id, token);
+    await sessionRepository.saveSession(user, token);
     return token;
 }
 

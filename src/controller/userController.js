@@ -1,4 +1,4 @@
-
+import { stripHtml } from 'string-strip-html';
 import * as userService from '../services/userService.js';
 import * as sessionService from '../services/sessionService.js';
 
@@ -18,7 +18,7 @@ export async function signUp(req,res) {
             return res.sendStatus(400);
         }
 
-        const user = await userService.findExistingUserByEmail(email);
+        const user = await userService.checkExistingUser(email);
 
         if(user) {
             return res.sendStatus(409)
@@ -46,9 +46,9 @@ export async function singIn(req,res) {
             return res.sendStatus(400);
         }
 
-        const user = await userService.findExistingUserByEmail(email);
+        const user = await userService.checkExistingUser(email);
 
-        const validLogin = userService.validatePassword(password, user?.password);
+        const validLogin = userService.validatePassword(password, user.password);
 
         if(user && validLogin) {
 

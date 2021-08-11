@@ -1,4 +1,6 @@
 import faker from 'faker'
+import bcrypt from 'bcrypt';
+import connection from '../../src/database';
 
 export function createFakeUser() {
     const body = { 
