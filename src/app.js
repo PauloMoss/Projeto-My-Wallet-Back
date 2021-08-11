@@ -4,7 +4,7 @@ import { stripHtml } from "string-strip-html";
 
 
 import authMiddleware from './middlewares/authMiddleware.js';
-import * as userController from './controller/userController.js';
+import * as userController from './controllers/userController.js';
 
 
 const app = express();
