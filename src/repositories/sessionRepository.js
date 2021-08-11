@@ -19,3 +19,10 @@ export async function findSession(token) {
 
     return success.rows[0];
 }
+
+export async function deleteSession(token) {
+    await connection.query(`
+        DELETE FROM sessions 
+        WHERE token = $1
+    `, [token]);
+}

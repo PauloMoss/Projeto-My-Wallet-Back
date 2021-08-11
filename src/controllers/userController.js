@@ -65,3 +65,16 @@ export async function singIn(req,res) {
         res.sendStatus(500);
     }
 }
+
+export async function logout(req, res) {
+    try{
+        const session = res.locals.userSession;
+        
+        await sessionService.logoutSession(session.token)
+        
+        res.sendStatus(200);
+    } catch(e) {
+        console.log(e);
+        res.sendStatus(500)
+    }
+}

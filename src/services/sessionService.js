@@ -16,3 +16,9 @@ export async function validateSession(token) {
 
     return userSession;
 }
+
+export async function logoutSession(token) {
+
+    await sessionRepository.deleteSession(token);
+
+}

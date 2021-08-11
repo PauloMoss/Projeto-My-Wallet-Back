@@ -11,7 +11,7 @@ export default async function authMiddleware(req, res, next) {
       return res.sendStatus(401);
     }
     
-    res.locals.userId = validSession.userId
+    res.locals.userSession = validSession
     next()
     } catch(e) {
       console.log(e)

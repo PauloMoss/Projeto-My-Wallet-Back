@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { stripHtml } from "string-strip-html";
 
-
 import authMiddleware from './middlewares/authMiddleware.js';
 import * as userController from './controllers/userController.js';
-
+import * as recordController from './controllers/recordController.js';
 
 const app = express();
 
@@ -16,40 +15,9 @@ app.post("/sign-up", userController.signUp)
 
 app.post("/login", userController.singIn)
 
-app.get("/records", async (req,res) => {
-    try{
-        const authorization = req.headers['authorization'];
-        const token = authorization?.replace('Bearer ', '');
-        if(!token) return res.sendStatus(401);
-        
-        const success = await connection.query(`
-            SELECT * FROM sessions 
-            WHERE token = $1
-        `, [token]);
-        
-        if(success.rows[0]) {
-            const result = await connection.query(`
-            SELECT records.id, records.value, records.type, records.date, records.description FROM records
-            JOIN sessions
-            ON sessions."userId" = records."userId"
-            WHERE sessions.token = $1
-        `, [token]);
-        
-        let balance = result.rows.reduce((acc, item) => item.type === 'Incomming' ? acc + item.value : acc - item.value , 0);
-        balance = (balance/100).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+app.post("/logout", authMiddleware, userController.logout)
 
-        result.rows.forEach(r => r.value = (r.value/100).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }));
-
-        res.send({userId: success.rows[0].userId, balance, records: result.rows})
-
-        } else {
-            res.sendStatus(401)
-        }
-    } catch(e) {
-        console.log(e);
-        res.sendStatus(500)
-    }
-})
+app.get("/records", authMiddleware, recordController.getAllUserRecords)
 
 app.post("/records/:transferType", async (req,res) => {
     try{
@@ -93,24 +61,6 @@ app.post("/records/:transferType", async (req,res) => {
         }
         res.sendStatus(201);
 
-    } catch(e) {
-        console.log(e);
-        res.sendStatus(500)
-    }
-})
-
-app.post("/logout", async (req,res) => {
-    try{
-        const authorization = req.headers['authorization'];
-        const token = authorization?.replace('Bearer ', '');
-
-        if(!token) return res.sendStatus(401);
-
-        await connection.query(`
-            DELETE FROM sessions 
-            WHERE token = $1
-        `, [token]);
-        res.sendStatus(200);
     } catch(e) {
         console.log(e);
         res.sendStatus(500)

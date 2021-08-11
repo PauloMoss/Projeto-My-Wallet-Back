@@ -3,7 +3,7 @@ import supertest from 'supertest';
 import app from '../../src/app.js';
 
 import{ cleanDatabase, endConnection } from '../utils/database.js';
-import{ createFakeUser, insertFakeUserInDatabase } from '../factories/userFactory.js';
+import{ createFakeUser, insertFakeUserInDatabase, fakeLogin } from '../factories/userFactory.js';
 
 beforeEach(cleanDatabase)
 
@@ -108,3 +108,28 @@ describe("POST /login", () => {
         expect(result.status).toEqual(400);
     });
 });
+
+describe("POST /logout", () => {
+
+    beforeEach(async () => {
+        const params = {name: 'MyIntegrationTest', email: 'test@test.com', password: '123456' }
+        await insertFakeUserInDatabase(params);
+        await fakeLogin("Meu_Token_Seguro")
+    })
+
+    it("returns status 200 for logout successfuly", async () => {
+        const token = "Bearer Meu_Token_Seguro";
+
+        const result = await supertest(app).post('/logout').set('Authorization', token)
+
+        expect(result.status).toEqual(200);
+    })
+
+    it("returns status 401 for unauthorized user", async () => {
+        const token = "Bearer Meu_Token";
+
+        const result = await supertest(app).post('/logout').set('Authorization', token)
+
+        expect(result.status).toEqual(401);
+    })
+})

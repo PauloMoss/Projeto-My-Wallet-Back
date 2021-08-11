@@ -23,3 +23,12 @@ export async function insertFakeUserInDatabase(params) {
             VALUES ($1, $2, $3)
         `, [name, email, cryptPassword]);
 }
+
+export async function fakeLogin(token) {
+    
+    const userId = 1;
+    await connection.query(`
+        INSERT INTO sessions ("userId", token)
+        VALUES ($1, $2)
+    `, [userId, token]);
+}
