@@ -52,7 +52,7 @@ export async function singIn(req,res) {
 
         if(user && validLogin) {
 
-            const token = sessionService.createSession(user)
+            const token = await sessionService.createSession(user)
             const { id, name, email } = user;
 
             res.send({id, name, email, token});

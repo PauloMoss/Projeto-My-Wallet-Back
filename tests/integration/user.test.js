@@ -61,12 +61,12 @@ describe("POST /sign-up", () => {
 describe("POST /login", () => {
 
     beforeEach(async () => {
-        const body = { name: 'MyIntegrationTest', email: 'test@test.com', password: '123456' }
-        await insertFakeUserInDatabase(body)
+        const params = {name: 'MyIntegrationTest', email: 'test@test.com', password: '123456' }
+        await insertFakeUserInDatabase(params)
     })
 
     it("returns status 200 for valid params", async () => {
-
+        
         const body = { email: 'test@test.com', password: '123456' }
 
         const result = await supertest(app).post('/login').send(body)

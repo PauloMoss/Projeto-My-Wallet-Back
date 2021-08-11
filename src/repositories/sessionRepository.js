@@ -6,6 +6,8 @@ export async function saveSession(user, token) {
         INSERT INTO sessions ("userId", token)
         VALUES ($1, $2)
     `, [user.id, token]);
+
+    return token;
 }
 
 export async function findSession(token) {

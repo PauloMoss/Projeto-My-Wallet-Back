@@ -4,7 +4,7 @@ import connection from '../../src/database';
 
 export function createFakeUser() {
     const body = { 
-        name: faker.name.firstName(),
+        name: 'faker.name.firstName()',
         email: faker.internet.email(), 
         password: 'testeCerto', 
         confirmPassword: 'testeCerto' 
@@ -12,13 +12,14 @@ export function createFakeUser() {
     return body;
 }
 
-export async function insertFakeUserInDatabase(body) {
+export async function insertFakeUserInDatabase(params) {
 
-    const { name, email, password } = body
+    const { name, email, password } = params;
+
     const cryptPassword = bcrypt.hashSync(password, 10);
 
     await connection.query(`
-        INSERT INTO users (name, email, password) 
-        VALUES ($1, $2, $3)
-    `), [name, email, cryptPassword];
+            INSERT INTO users (name, email, password) 
+            VALUES ($1, $2, $3)
+        `, [name, email, cryptPassword]);
 }
