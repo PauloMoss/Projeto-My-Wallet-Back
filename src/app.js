@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import { stripHtml } from "string-strip-html";
 
 import authMiddleware from './middlewares/authMiddleware.js';
 import * as userController from './controllers/userController.js';
@@ -19,52 +18,6 @@ app.post("/logout", authMiddleware, userController.logout)
 
 app.get("/records", authMiddleware, recordController.getAllUserRecords)
 
-app.post("/records/:transferType", async (req,res) => {
-    try{
-        req.body.description = stripHtml(req.body.description).result.trim()
-
-        const authorization = req.headers['authorization'];
-        const token = authorization?.replace('Bearer ', '');
-
-        if(!token) return res.sendStatus(401);
-
-        const err = transferSchema.validate(req.body).error;
-        if(err) {
-            console.log(err)
-            return res.sendStatus(400);
-        }
-
-        const { transferType } = req.params;
-        const { value, description } = req.body;
-        let type;
-        if(transferType === 'Out') {
-            type = 'Withdraw';
-        } else if(transferType === 'In') {
-            type = 'Incomming';
-        } else {
-            return res.sendStatus(404);
-        }
-
-        const success = await connection.query(`
-        SELECT * FROM sessions 
-        WHERE token = $1
-    `, [token]);
-        
-        if(success.rows[0]) {
-            const userId = success.rows[0].userId
-            await connection.query(`
-                INSERT INTO records ("userId", value, type, date, description)
-                VALUES ($1, $2, $3, NOW(), $4 )
-            `, [userId, value, type, description]);
-        } else {
-            return res.sendStatus(401);
-        }
-        res.sendStatus(201);
-
-    } catch(e) {
-        console.log(e);
-        res.sendStatus(500)
-    }
-})
+app.post("/records/:transferType", authMiddleware, recordController.postNewRecord)
 
 export default app;

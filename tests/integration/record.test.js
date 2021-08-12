@@ -54,11 +54,70 @@ describe("GET /records", () => {
     });
 
     it("returns status 401 for unauthorized record access", async () => {
+
         const token = "Bearer Meu_Token";
 
         const result = await supertest(app).get('/records').set('Authorization', token)
 
         expect(result.status).toEqual(401);
     })
-    
+});
+
+describe("POST /records/:transferType", () => {
+
+    beforeEach(async () => {
+        const params = {name: 'MyIntegrationTest', email: 'test@test.com', password: '123456' }
+        await insertFakeUserInDatabase(params);
+        await fakeLogin("Meu_Token_Seguro")
+    });
+
+    it("returns status 201 for created new Incomming record transfer", async () => {
+
+        const params = {value: 100, description: 'Teste'};
+        const token = "Bearer Meu_Token_Seguro";
+
+        const result = await supertest(app).post('/records/In').send(params).set('Authorization', token)
+
+        expect(result.status).toEqual(201);
+    });
+
+    it("returns status 201 for created new Withdraw record transfer", async () => {
+
+        const params = {value: 100, description: 'Teste'};
+        const token = "Bearer Meu_Token_Seguro";
+
+        const result = await supertest(app).post('/records/Out').send(params).set('Authorization', token)
+
+        expect(result.status).toEqual(201);
+    });
+
+    it("returns status 404 for invalid route", async () => {
+
+        const params = {value: 100, description: 'Teste'};
+        const token = "Bearer Meu_Token_Seguro";
+
+        const result = await supertest(app).post('/records/Test').send(params).set('Authorization', token)
+
+        expect(result.status).toEqual(404);
+    });
+
+    it("returns status 401 for unauthorized user", async () => {
+
+        const params = {value: 100, description: 'Teste'};
+        const token = "Bearer Meu_Token";
+
+        const result = await supertest(app).post('/records/Test').send(params).set('Authorization', token)
+
+        expect(result.status).toEqual(401);
+    });
+
+    it("returns status 400 for invalid body params", async () => {
+
+        const params = {value: "", description: 'Teste'};
+        const token = "Bearer Meu_Token_Seguro";
+
+        const result = await supertest(app).post('/records/Out').send(params).set('Authorization', token)
+
+        expect(result.status).toEqual(400);
+    })
 })

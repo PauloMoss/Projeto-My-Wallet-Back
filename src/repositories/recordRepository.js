@@ -15,3 +15,13 @@ export async function findRecordsByUserId(userId) {
 
     return result.rows;
 }
+
+export async function insertRecord(params) {
+
+    const { userId, value, description, type } = params;
+
+    await connection.query(`
+        INSERT INTO records ("userId", value, type, date, description)
+        VALUES ($1, $2, $3, NOW(), $4 )
+    `, [userId, value, type, description]);
+}

@@ -14,6 +14,11 @@ export async function getRecords(userId) {
     return {records, balance};
 }
 
+export async function createNewRecord(params) {
+
+    await recordRepository.insertRecord(params);
+}
+
 function calculateBalance(arrayOfRecord) {
 
     let balance = arrayOfRecord.reduce((acc, item) => item.type === 'Incomming' ? acc + item.value : acc - item.value , 0);
